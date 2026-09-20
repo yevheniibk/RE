@@ -41,6 +41,16 @@ jobs:
           sha256sum sc.bin decoded_static.bin decoded_dynamic.bin >> verification.txt
           cat verification.txt
 
+          {
+            printf '### ✅ ЛР 2 — декодування успішне\n\n| Файл | Розмір, байтів |\n|---|---:|\n'
+            for file in sc.bin encoded.bin decoded_static.bin decoded_dynamic.bin; do
+              printf '| `%s` | %s |\n' "$file" "$(wc -c < "$file")"
+            done
+            printf '\nОбидва декодери відновили оригінал без змін.\n\n<details><summary>Контрольні суми SHA-256</summary>\n\n```text\n'
+            sha256sum sc.bin decoded_static.bin decoded_dynamic.bin
+            printf '```\n</details>\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/upload-artifact@v4
         with:
           name: lab2-results-${{ github.run_number }}
