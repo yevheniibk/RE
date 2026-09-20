@@ -33,8 +33,8 @@ jobs:
             -i 1 -f raw -o /work/results/encoded.bin
 
           cd results
-          python ../_dec_static.py encoded.bin decoded_static.bin
-          python ../_emu.py encoded.bin decoded_dynamic.bin
+          python ../static.py encoded.bin decoded_static.bin
+          python ../dynamic.py encoded.bin decoded_dynamic.bin
           cmp sc.bin decoded_static.bin
           cmp sc.bin decoded_dynamic.bin
           printf 'Static decoder: PASS\nDynamic decoder: PASS\n' > verification.txt
