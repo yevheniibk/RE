@@ -1,0 +1,47 @@
+name: Lab 2 - encode and decode
+
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  lab2:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Encode, decode and verify
+        run: |
+          python -m pip install unicorn==2.1.4 capstone==5.0.9
+          mkdir results
+          cp sc.bin results/
+
+          docker run --rm --network none --env HOME=/tmp \
+            -v "$GITHUB_WORKSPACE:/work" \
+            --entrypoint /usr/src/metasploit-framework/msfvenom \
+            metasploitframework/metasploit-framework:latest \
+            -p generic/custom PAYLOADFILE=/work/results/sc.bin \
+            -a x86 --platform windows \
+            -e x86/unicode_mixed BufferRegister=ECX BufferOffset=0 \
+            -i 1 -f raw -o /work/results/encoded.bin
+
+          cd results
+          python ../static.py encoded.bin decoded_static.bin
+          python ../dynamic.py encoded.bin decoded_dynamic.bin
+          cmp sc.bin decoded_static.bin
+          cmp sc.bin decoded_dynamic.bin
+          printf 'Static decoder: PASS\nDynamic decoder: PASS\n' > verification.txt
+          sha256sum sc.bin decoded_static.bin decoded_dynamic.bin >> verification.txt
+          cat verification.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lab2-results-${{ github.run_number }}
+          path: results/
+          retention-days: 7
